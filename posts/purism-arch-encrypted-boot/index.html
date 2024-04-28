@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="chrome=1">
+        <meta name="HandheldFriendly" content="True">
+        <meta name="MobileOptimized" content="320">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="referrer" content="no-referrer">
+
+        <link rel="stylesheet" href="https://cabeceo.co/fonts.css">
+        <link rel="stylesheet" href="https://cabeceo.co/style.css">
+
+        <title>
+    Arch Linux on a coreboot&#x2F;SeaBIOS Librem 13v3
+</title>
+
+        
+    </head>
+    <body>
+        
+    <div class="wrap">
+        <div class="section" id="title">
+            
+    Arch Linux on a coreboot&#x2F;SeaBIOS Librem 13v3
+
+        </div>
+        <div class="section" id="sections">
+            
+        </div>
+        <div class="section" id="content">
+            
+    
+        
+            
+    
+    Sat Jul 30, 2022
+
+        
+        
+            
+                &#183; 450 words
+            
+        
+        
+            
+            
+                &#183; 3 min
+            
+        
+        
+            <div class="tag-container">
+                Tags :&nbsp;
+                
+                    <span class="tag">
+                        <a href="https://cabeceo.co/tags/librem/">
+                            librem
+                        </a>
+                    </span>
+                
+                    <span class="tag">
+                        <a href="https://cabeceo.co/tags/arch/">
+                            arch
+                        </a>
+                    </span>
+                
+                    <span class="tag">
+                        <a href="https://cabeceo.co/tags/grub/">
+                            grub
+                        </a>
+                    </span>
+                
+                    <span class="tag">
+                        <a href="https://cabeceo.co/tags/laptops/">
+                            laptops
+                        </a>
+                    </span>
+                
+                    <span class="tag">
+                        <a href="https://cabeceo.co/tags/coreboot/">
+                            coreboot
+                        </a>
+                    </span>
+                
+            </div>
+        
+        
+            <div class="tag-container">
+                Authors :&nbsp;
+                
+                    <span class="tag">
+                        <a href="https://cabeceo.co/authors/max/">
+                            max
+                        </a>
+                    </span>
+                
+            </div>
+        
+        <hr/>
+    
+    <h2 id="arch-linux-on-a-librem-13v3">Arch Linux on a Librem 13v3</h2>
+<p>Notes on installing Arch Linux on a Purism Librem 13v3 laptop.</p>
+<p>Tech:</p>
+<ul>
+<li>coreboot/SeaBIOS</li>
+<li>BIOS, because that's what the laptop boots via above
+<ul>
+<li>We'll muck with the partitions to make this upgradable to EFI, however</li>
+</ul>
+</li>
+<li>GPT</li>
+<li>GRUB as bootloader, for encrypted <code>/boot</code>, and <code>/</code></li>
+</ul>
+<h2 id="process">Process</h2>
+<ol>
+<li>Open up the laptop and put in an M.2 SSD, which we'll use for the OS</li>
+<li>Download latest arch linux ISO and write to a flash drive, then insert into right USB port</li>
+<li>Boot the laptop. Hit <code>ESC</code> and boot from the USB drive.
+<ul>
+<li>for the 13v3, it will boot in BIOS mode</li>
+</ul>
+</li>
+<li>(optional) Write random data to the hard disks to create background signal across
+the entire drive</li>
+<li>Use <code>gdisk</code> to create the following partitions on <code>/dev/nvmX</code>:
+<ol>
+<li>Partition 1: 1MiB of type <code>ef02</code>. Do not format this partition.</li>
+<li>(optional) Partition 2: 1GiB of type <code>ef00</code>.
+<ul>
+<li>This is for future use in EFI systems, if you want to move this drive somewhere else</li>
+</ul>
+</li>
+<li>Partition 3-X: 100GiB for the base system, and whatever else you want</li>
+<li>&quot;An unpartitioned space of at least 33 512-byte sectors (16.5 KiB) at the end of the disk to allow converting to GPT in the future&quot; <a href="https://wiki.archlinux.org/title/GPT_fdisk#Convert_between_MBR_and_GPT">1</a></li>
+</ol>
+</li>
+<li>Run <code>cryptsetup</code>, formatting the 3rd (or whatever) partition with <code>luks1</code></li>
+<li><code>cryptsetup open</code> the device, then mount the mapped device to <code>/mnt</code>
+<ul>
+<li><code>cryptsetup open /dev/nvmX cryptnvme</code>, then type in password</li>
+</ul>
+</li>
+<li>Follow the arch install guide until <code>mkinitcpio</code> step</li>
+<li>Update <code>mkinitcpio.conf</code> per <a href="https://wiki.archlinux.org/title/Dm-crypt/Encrypting_an_entire_system#Configuring_mkinitcpio">2</a></li>
+<li>Install grub to <code>/dev/nvmX</code> (the device, not the partition)
+<ul>
+<li><code>grub-install --target=i386-pc /dev/nvmX</code></li>
+</ul>
+</li>
+<li><code>lsblk -o +UUID &gt; /blockdevices.txt</code>. Get the UUID of the <code>nvmX</code> device (not the partition)</li>
+<li>Follow instructions <a href="https://wiki.archlinux.org/title/GRUB#Encrypted_/boot">here</a> to enable cryptodisk in <code>/etc/default/grub</code>.</li>
+<li>Update <code>/etc/default/grub</code> as follows:
+<ul>
+<li><code>GRUB_CMDLINE_LINUX=&quot;cryptdevice=UUID=your_device_uuid:cryptnvme cryptnvme=/dev/mapper/cryptnvme&quot;</code></li>
+<li>Be sure this is the <em>dmcrypt</em> partition UUID, <em>not</em> the decrypted, mapped partition UUID</li>
+<li>This assumes your <code>fstab</code> (and original mount for the mapped, decrypted partition) is <code>/dev/mapper/cryptnvme</code>; update accordingly</li>
+</ul>
+</li>
+<li>Don't forget to install networking utilities, <code>sudo</code>, <code>zsh</code>, and other goodies.</li>
+<li>Don't install <code>intel-microcode</code>, however - that's handled by the Purism coreboot updates.</li>
+</ol>
+<p>Obviously, you can modify this to e.g. forego GPT, use LVM, don't encrypt <code>/boot</code>, or whatever else.</p>
+<p>You can also use a <a href="https://wiki.archlinux.org/title/Dm-crypt/Device_encryption#Keyfiles">keyfile</a>
+to prevent having to type your password twice (once to unlock <code>/boot</code>, the other to unlock the drive).</p>
+
+
+        </div>
+        
+    <div class="section bottom-menu">
+        <hr/>
+        <p>
+            
+                
+                    <a href="&#x2F;posts">posts</a>
+                    &#183;
+                
+                    <a href="&#x2F;about">about</a>
+                    &#183;
+                
+                    <a href="https:&#x2F;&#x2F;github.com&#x2F;Cabeceo">github</a>
+                    &#183;
+                
+            
+            <a href="https:&#x2F;&#x2F;cabeceo.co">
+                home
+            </a>
+        </p>
+    </div>
+
+        
+    
+
+    </div>
+
+    </body>
+</html>

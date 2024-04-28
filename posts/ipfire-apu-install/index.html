@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="chrome=1">
+        <meta name="HandheldFriendly" content="True">
+        <meta name="MobileOptimized" content="320">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="referrer" content="no-referrer">
+
+        <link rel="stylesheet" href="https://cabeceo.co/fonts.css">
+        <link rel="stylesheet" href="https://cabeceo.co/style.css">
+
+        <title>
+    IPFire install on APU2E4
+</title>
+
+        
+    </head>
+    <body>
+        
+    <div class="wrap">
+        <div class="section" id="title">
+            
+    IPFire install on APU2E4
+
+        </div>
+        <div class="section" id="sections">
+            
+        </div>
+        <div class="section" id="content">
+            
+    
+        
+            
+    
+    Sat May 15, 2021
+
+        
+        
+            
+                &#183; 694 words
+            
+        
+        
+            
+            
+                &#183; 4 min
+            
+        
+        
+            <div class="tag-container">
+                Tags :&nbsp;
+                
+                    <span class="tag">
+                        <a href="https://cabeceo.co/tags/ipfire/">
+                            ipfire
+                        </a>
+                    </span>
+                
+                    <span class="tag">
+                        <a href="https://cabeceo.co/tags/apu/">
+                            apu
+                        </a>
+                    </span>
+                
+                    <span class="tag">
+                        <a href="https://cabeceo.co/tags/router/">
+                            router
+                        </a>
+                    </span>
+                
+            </div>
+        
+        
+            <div class="tag-container">
+                Authors :&nbsp;
+                
+                    <span class="tag">
+                        <a href="https://cabeceo.co/authors/max/">
+                            max
+                        </a>
+                    </span>
+                
+            </div>
+        
+        <hr/>
+    
+    <h2 id="installing-ipfire-on-an-apu2e4">Installing IPFire on an APU2E4</h2>
+<p>Installing the latest IPFire (via PXE) on a brand new APU2E4 did not
+work, and was not simple to fix - the installer reported an out of
+memory error, or similar (didn't make notes,
+unfortunately). Additionally, the oldest version that was available on
+the PXE boot failed with serial console gibberish output.
+<a href="https://community.ipfire.org/t/install-via-serial-on-apu4-not-possible/2193">Other users reported similar issues</a>.</p>
+<p>This post details instructions that will get you to the latest IPFire
+install, without too much wasted time. We are focused on reliably
+installing IPFire to an APU board; it's important, therefore, that you
+use the exact versions of the linked downloads and installers. These
+will get you up and running.</p>
+<h3 id="you-will-need">You will need</h3>
+<ul>
+<li>an APU2E4 with an installed disk</li>
+<li>a <a href="https://pcengines.ch/howto.htm#serialconsole">null modem serial cable</a></li>
+<li>a USB thumbdrive
+<ul>
+<li>Back up previous data as it will need to be wiped</li>
+</ul>
+</li>
+<li>a computer with e.g. <code>root</code> + <code>dd</code> in order to flash above USB drive</li>
+<li>connection to the internet, likely via ethernet, to do the actual IPFire install</li>
+</ul>
+<p>We'll need to download about 1.5GB of data. If your internet
+connection is prohibitively slow, plan to download the <code>.iso</code> files
+ahead of time or acquire them in another manner.</p>
+<h3 id="serial-cable-test-and-bios-update">Serial cable test and BIOS update</h3>
+<p>Before we install IPFire, we need to get the latest APU BIOS flashed
+to our unit. As a nice side effect, this will also test your serial
+cable if you are not sure whether or not it's working right and is the
+correct type: e.g. you just bought one for the first time off of a
+non-PCEngines retailer.</p>
+<ol>
+<li>Download debian live standard ISO image
+<ul>
+<li>make sure it has <code>standard</code> in the name and is a <code>.iso</code> file</li>
+<li><a href="https://cdimage.debian.org/debian-cd/current-live/amd64/iso-hybrid/">e.g. here</a>.
+Or <a href="https://cdimage.debian.org/debian-cd/current-live/amd64/iso-hybrid/debian-live-10.9.0-amd64-standard.iso">directly</a>.
+This link may be bit rotted; just look for <code>standard.iso</code> wherever debian downloads are.</li>
+</ul>
+</li>
+<li><em>carefully</em> flash this to your USB using e.g. <code>dd</code>.</li>
+<li>Insert USB and hook up serial cable to APU. Boot it.</li>
+<li>On boot menu, hit <code>TAB</code> and add <code>console=ttyS0,115200n8</code> to the command line options.
+<ul>
+<li>This is a good test of your serial cable. If you see gibberish, test serial cable and ensure it is null modem or equivalent.</li>
+</ul>
+</li>
+<li>Log in: username <code>user</code>, password <code>live</code></li>
+<li>Become root: <code>sudo su</code></li>
+<li>Run: <code>apt update &amp;&amp; apt install flashrom</code></li>
+<li><code>wget</code> latest firmware. For APU2 series, get the APU2 series firmware.
+<ul>
+<li><a href="https://pcengines.github.io/">firmware site</a></li>
+<li>ex: <code>wget https://3mdeb.com/open-source-firmware/pcengines/apu2/apu2...</code></li>
+<li>verify hash. You don't want to flash a broken download. This 5 second check will save you a lot of headaches.</li>
+</ul>
+</li>
+<li>Run:
+<code>flashrom -w apu2_vx.y.z.a.rom -p internal:boardmismatch=force</code>
+<ul>
+<li>The <code>force</code> flag seems to be needed as the manufacturers almost, but don't quite, align.</li>
+</ul>
+</li>
+<li>Power off APU; unplug flash.</li>
+</ol>
+<h3 id="ipfire-install">IPFire install</h3>
+<p>We have a working serial cable and an APU unit with the latest
+BIOS. We need to install an older IPFire image that we know
+works. Other versions may or may not work. Recall we're focused on
+reliability, not efficiency.</p>
+<ol>
+<li>Download <code>.iso</code> from <a href="https://boot.ipfire.org/releases/ipfire-2.x/2.23-core139/">here</a>.
+<ul>
+<li><a href="https://boot.ipfire.org/releases/ipfire-2.x/2.23-core139/ipfire-2.23.x86_64-full-core139.iso">.iso hotlink</a>; <a href="https://boot.ipfire.org/releases/ipfire-2.x/2.23-core139/ipfire-2.23.x86_64-full-core139.iso.md5">.md5 hotlink</a>.</li>
+</ul>
+</li>
+<li><em>carefully</em> flash with e.g. <code>dd</code> to your USB drive.</li>
+<li>Unplug USB drive and plug into APU; boot APU.</li>
+</ol>
+<p>From here, you should be able to install IPFire fairly simply following the vanilla install instructions.</p>
+<h3 id="updating-to-latest-ipfire">Updating to latest IPFire</h3>
+<p>Once you're all set up with IPFire, you can update to the latest via
+the web GUI. Visit the router homepage on <code>:444</code> and look for an
+<code>update to core is available</code> message.</p>
+<p>You will likely need to do this at least twice; once to get you from
+<code>2.23</code> to an intermediate stage, and then from the intermediate stage
+to <code>latest</code>.</p>
+<h3 id="references">References</h3>
+<ul>
+<li><a href="https://teklager.se/en/knowledge-base/apu-bios-upgrade/">Debian APU Bios update</a></li>
+</ul>
+
+
+        </div>
+        
+    <div class="section bottom-menu">
+        <hr/>
+        <p>
+            
+                
+                    <a href="&#x2F;posts">posts</a>
+                    &#183;
+                
+                    <a href="&#x2F;about">about</a>
+                    &#183;
+                
+                    <a href="https:&#x2F;&#x2F;github.com&#x2F;Cabeceo">github</a>
+                    &#183;
+                
+            
+            <a href="https:&#x2F;&#x2F;cabeceo.co">
+                home
+            </a>
+        </p>
+    </div>
+
+        
+    
+
+    </div>
+
+    </body>
+</html>

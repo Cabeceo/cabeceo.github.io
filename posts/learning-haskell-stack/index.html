@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="chrome=1">
+        <meta name="HandheldFriendly" content="True">
+        <meta name="MobileOptimized" content="320">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="referrer" content="no-referrer">
+
+        <link rel="stylesheet" href="https://cabeceo.co/fonts.css">
+        <link rel="stylesheet" href="https://cabeceo.co/style.css">
+
+        <title>
+    Haskell session 1 - Stack
+</title>
+
+        
+    </head>
+    <body>
+        
+    <div class="wrap">
+        <div class="section" id="title">
+            
+    Haskell session 1 - Stack
+
+        </div>
+        <div class="section" id="sections">
+            
+        </div>
+        <div class="section" id="content">
+            
+    
+        
+            
+    
+    Tue Jul 23, 2019
+
+        
+        
+            
+                &#183; 330 words
+            
+        
+        
+            
+            
+                &#183; 2 min
+            
+        
+        
+            <div class="tag-container">
+                Tags :&nbsp;
+                
+                    <span class="tag">
+                        <a href="https://cabeceo.co/tags/haskell/">
+                            haskell
+                        </a>
+                    </span>
+                
+                    <span class="tag">
+                        <a href="https://cabeceo.co/tags/xmobar/">
+                            xmobar
+                        </a>
+                    </span>
+                
+                    <span class="tag">
+                        <a href="https://cabeceo.co/tags/fp/">
+                            fp
+                        </a>
+                    </span>
+                
+                    <span class="tag">
+                        <a href="https://cabeceo.co/tags/stack/">
+                            stack
+                        </a>
+                    </span>
+                
+            </div>
+        
+        
+            <div class="tag-container">
+                Authors :&nbsp;
+                
+                    <span class="tag">
+                        <a href="https://cabeceo.co/authors/max/">
+                            max
+                        </a>
+                    </span>
+                
+            </div>
+        
+        <hr/>
+    
+    <h2 id="learning-haskell">Learning Haskell</h2>
+<p>I spent the weekend learning some Haskell. My goals were:</p>
+<ul>
+<li>
+<p>learn a bit about the language in the trenches: is there any
+utility in learning more about this?</p>
+</li>
+<li>
+<p>learn a bit about the toolchain: building, deploying, etc.</p>
+</li>
+<li>
+<p>add a small plugin to <a href="https://github.com/jaor/xmobar">xmobar</a>, showing my age
+as a decimal number. Inspired by <a href="https://en.wikipedia.org/wiki/Memento_mori">memento mori</a>
+and trying to make the most of our limited time in this life.</p>
+<p>This is something I want to see increase slightly every day,
+as a constant reminder to get stuff done.</p>
+</li>
+</ul>
+<p>I figured the above would be a nice whirlwind tour: not enough
+to start monad engineering, but enough to defend myself.</p>
+<h2 id="stack">Stack</h2>
+<p><a href="https://docs.haskellstack.org/en/stable/README/">Stack</a> is the build system I chose to use for the library and
+CLI. It seems a bit more modern and recommended than pure <code>cabal</code>,
+which ships with Haskell itself. Stack seems to provide a higher level
+wrapping around cabal to some extent, along with some other goodies
+like caching.</p>
+<p>I also like Stack's commitment to reproducible builds, creating an
+environment per-project with its own <code>ghc</code>, the Haskell compiler.  I
+actually don't even have <code>ghc</code> installed locally, so there's no chance
+I'm mucking up the build by having things on my system's <code>PATH</code>
+override any project-specific stuff.</p>
+<p>The downside is that Stack can eat massive amounts of disk, as you'll
+have a <code>ghc</code> for even minor versions e.g. <code>8.4.2</code>
+vs. <code>8.4.3</code>. Something to be aware of.</p>
+<p>Hacking on stack basically involved looking at the documentation and
+various YAML files, so nothing too painful, yet.</p>
+<h3 id="notes">Notes</h3>
+<ul>
+<li><code>stack build</code> - produce binary</li>
+<li><code>stack run [args]</code> - run directly from slack</li>
+<li><code>stack ghc</code> - if you need to shell out to <code>ghc</code> for whatever</li>
+<li><code>stack ghci</code> - start a repl</li>
+</ul>
+<h2 id="wrap-up">Wrap up</h2>
+<p>It was pretty painless getting set up with stack, and creating
+a CLI/library project.</p>
+<p>Next up: Haskell coding, xmobar detective work, and more.</p>
+
+
+        </div>
+        
+    <div class="section bottom-menu">
+        <hr/>
+        <p>
+            
+                
+                    <a href="&#x2F;posts">posts</a>
+                    &#183;
+                
+                    <a href="&#x2F;about">about</a>
+                    &#183;
+                
+                    <a href="https:&#x2F;&#x2F;github.com&#x2F;Cabeceo">github</a>
+                    &#183;
+                
+            
+            <a href="https:&#x2F;&#x2F;cabeceo.co">
+                home
+            </a>
+        </p>
+    </div>
+
+        
+    
+
+    </div>
+
+    </body>
+</html>
